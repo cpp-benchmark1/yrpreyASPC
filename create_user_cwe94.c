@@ -125,3 +125,17 @@ int main() {
     close(server_fd);
     return 0;
 }
+
+/*
+To test it:
+
+1. First compile the program:
+gcc create_user_cwe94.c -o create_user_cwe94 -ldl
+
+2. Run the server:
+./create_user_cwe94
+
+3. In another terminal, you can test the vulnerability by sending a malicious library path:
+echo "/path/to/malicious/library.so" | nc localhost 8080
+
+*/
