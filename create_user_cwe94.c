@@ -11,30 +11,30 @@
 
 typedef void (*function_ptr)();
 
-// Função vulnerável que permite injeção de código
+// Vulnerable function that allows code injection
 void dlsymUnsafe(const char *userInput) {
     void *handle;
     function_ptr func;
     
-    // Carrega a biblioteca dinamicamente usando o input do usuário
+    // Dynamically load library using user input
     handle = dlopen(userInput, RTLD_LAZY);
     if (!handle) {
         fprintf(stderr, "dlopen failed: %s\n", dlerror());
         return;
     }
 
-    //SINK - Ponto de injeção de código
+    //SINK - Code injection point
     func = (function_ptr)dlsym(handle, "some_function");
     
     if (func) {
         printf("Executing function pointer from dlsym...\n");
-        func(); // Executa o código potencialmente malicioso
+        func(); // Execute potentially malicious code
     }
     
     dlclose(handle);
 }
 
-// Função segura com biblioteca fixa
+// Safe function with fixed library
 void dlsymSafe() {
     void *handle;
     function_ptr func;
@@ -46,7 +46,7 @@ void dlsymSafe() {
         return;
     }
 
-    //SAFE_SINK - Usa uma biblioteca conhecida e segura
+    //SAFE_SINK - Uses a known and safe library
     func = (function_ptr)dlsym(handle, "some_function");
     
     if (func) {
@@ -110,11 +110,11 @@ int main() {
             buffer[valread] = '\0'; // Null-terminate the string
             printf("Received data: %s\n", buffer);
             
-            // Demonstração da vulnerabilidade de injeção de código
+            // Demonstrate code injection vulnerability
             printf("\nTesting code injection vulnerability:\n");
             dlsymUnsafe(buffer);
             
-            // Demonstração do uso seguro
+            // Demonstrate safe usage
             printf("\nTesting safe function:\n");
             dlsymSafe();
         }
