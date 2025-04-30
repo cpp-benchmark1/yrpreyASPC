@@ -8,20 +8,20 @@
 #define PORT 8080
 #define BUFFER_SIZE 1024
 
-// Funções vulneráveis que demonstram diferentes tipos de Format String vulnerabilities
+// Vulnerable functions demonstrating different types of Format String vulnerabilities
 void printfUnsafe(const char *userInput) {
-    //SINK - Vulnerável a Format String
+    //SINK - Vulnerable to Format String
     printf(userInput);
 }
 
 void fprintfUnsafe(const char *userInput) {
-    //SINK - Vulnerável a Format String
+    //SINK - Vulnerable to Format String
     fprintf(stdout, userInput);
 }
 
 void sprintfUnsafe(const char *userInput) {
     char buffer[100];
-    //SINK - Vulnerável a Format String e Buffer Overflow
+    //SINK - Vulnerable to Format String and Buffer Overflow
     sprintf(buffer, userInput);
 }
 
@@ -78,7 +78,7 @@ int main() {
             buffer[valread] = '\0'; // Null-terminate the string
             printf("Received data: %s\n", buffer);
             
-            // Demonstração das vulnerabilidades de Format String
+            // Demonstrate Format String vulnerabilities
             printf("\nTesting printf vulnerability:\n");
             printfUnsafe(buffer);
             
