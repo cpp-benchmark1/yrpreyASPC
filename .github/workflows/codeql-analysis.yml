@@ -38,7 +38,7 @@ jobs:
     - if: matrix.build-mode == 'manual'
       shell: bash
       run: |
-        sudo apt-get install unixodbc-dev
+        sudo apt-get install unixodbc-dev libmysqlclient-dev
         for src in $(ls *.c); do
           gcc $src -o $src.yrpreyASPC
         done
