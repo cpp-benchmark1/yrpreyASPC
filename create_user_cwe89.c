@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <libpq-fe.h>   // PostgreSQL
+#include <postgresql/libpq-fe.h>  // PostgreSQL
 #include <sqlite3.h>    // SQLite
 #include <sql.h>        // ODBC
 #include <sqlext.h>     // ODBC
@@ -181,3 +181,8 @@ int main(void) {
 
     return 0;
 }
+
+/*
+Compilation command:
+gcc create_user_cwe89.c -o create_user_cwe89 -I/usr/include/postgresql -I/usr/include/mysql -lmysqlclient -lpq -lsqlite3 -lodbc
+*/
