@@ -17,14 +17,11 @@ void process_data(char *data, int size) {
     }
     
     memcpy(buffer, data, size);
-    free(buffer);
-    buffer = NULL;
+    free(buffer);  // First free
     
     sleep(1);
     
-    if (buffer != NULL) {
-        free(buffer);
-    }
+    free(buffer);  // Double free - should cause segmentation fault
 }
 
 int main(int argc, char *argv[]) {
