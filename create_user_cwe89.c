@@ -8,7 +8,7 @@
 #include <sqlite3.h>    // SQLite
 #include <sql.h>        // ODBC
 #include <sqlext.h>     // ODBC
-#include <mysql.h>      // MySQL
+#include <mysql/mysql.h>      // MySQL
 
 #define PORT 8080
 #define BUFFER_SIZE 100
