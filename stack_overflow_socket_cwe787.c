@@ -13,13 +13,22 @@
 void process_data(char *data, int size) {
     char buffer[SMALL_BUFFER_SIZE];  // stack buffer
 
-    // 💥 Buffer overflow if size > SMALL_BUFFER_SIZE
-    // SINK
-    memcpy(buffer, data, size);
+    // Ensure buffer is initialized
+    memset(buffer, 0, SMALL_BUFFER_SIZE);
 
-    printf("Data copied to buffer: %.10s...\n", buffer);
+    // Interpret the received data as index-value pairs
+    for (int i = 0; i + 1 < size; i += 2) {
+        int index = (unsigned char)data[i];      // controlled by user
+        char value = data[i + 1];
 
-    // Optional malloc to trigger runtime error
+        // 💥 Out-of-bounds write if index >= SMALL_BUFFER_SIZE
+        // SINK
+        buffer[index] = value;
+    }
+
+    printf("Processed buffer: %.10s...\n", buffer);
+
+    // Optional malloc to trigger stack corruption
     void *new_ptr = malloc(128);
     (void)new_ptr;
 }
@@ -92,7 +101,12 @@ int main(int argc, char *argv[]) {
         }
 
         printf("Connected to server\n");
-        memset(recv_buffer, 'A', SOCKET_BUFFER_SIZE);
+
+        // Build index-value payload (e.g., write 'Z' at position 200 — out of bounds)
+        for (int i = 0; i < SOCKET_BUFFER_SIZE; i += 2) {
+            recv_buffer[i] = (char)(200);      // index out of bounds
+            recv_buffer[i + 1] = 'Z';
+        }
 
         if (write(sock, recv_buffer, SOCKET_BUFFER_SIZE) < 0) {
             printf("Send failed\n");
