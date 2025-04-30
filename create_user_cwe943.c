@@ -7,7 +7,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#define PORT 27017
+#define PORT 27018
 #define BUFFER_SIZE 1024
 
 void mongoInsertUnsafe(const char* userInput) {
@@ -108,3 +108,40 @@ int main() {
     close(server_fd);
     return 0;
 }
+
+/*
+INSTRUCTIONS FOR TESTING USING DOCKER:
+
+1. Create and enter the container:
+   docker run -it --name ubuntu_projects -v "$PWD":/workspace -w /workspace ubuntu bash
+
+2. Install dependencies:
+   apt-get update
+   apt-get install -y wget gnupg
+   wget -qO - https://www.mongodb.org/static/pgp/server-7.0.asc | apt-key add -
+   echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+   apt-get update
+   apt-get install -y mongodb-org pkg-config libmongoc-dev libbson-dev netcat-traditional
+
+3. Start MongoDB:
+   mkdir -p /data/db
+   mongod --dbpath /data/db --fork --logpath /var/log/mongodb/mongod.log
+
+4. Compile the program:
+   gcc create_user_cwe943.c -o create_user_cwe943 $(pkg-config --cflags --libs libmongoc-1.0)
+
+5. Run the program:
+   ./create_user_cwe943
+
+6. In another terminal (using docker exec):
+   docker exec -it ubuntu_projects bash
+
+7. Test with payloads:
+   # Normal test
+   echo '{"username": "test", "password": "test123"}' | nc localhost 27018
+   
+   # NoSQL injection tests
+   echo '{"$where": "function() { return true; }"}' | nc localhost 27018
+
+
+*/
