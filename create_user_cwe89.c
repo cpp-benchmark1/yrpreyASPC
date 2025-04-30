@@ -4,68 +4,152 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <libpq-fe.h>   // PostgreSQL
+#include <sqlite3.h>    // SQLite
+#include <sql.h>        // ODBC
+#include <sqlext.h>     // ODBC
+#include <mysql.h>      // MySQL
 
 #define PORT 8080
 #define BUFFER_SIZE 100
 
-// Simulated database structure
-typedef struct {
-    int id;
-    char username[50];
-    char email[50];
-} User;
-
-// Simulated database
-User users[] = {
-    {1, "admin", "admin@example.com"},
-    {2, "user1", "user1@example.com"},
-    {3, "test", "test@example.com"},
-    {0, "", ""}  // Terminator
-};
-
-// Function to simulate database query
-void execute_query(const char* query) {
+// MySQL 
+void mysql_query_unsafe(const char* userInput) {
+    MYSQL *conn = mysql_init(NULL);
     
-    // Simulate query parsing and execution
-    char username[50] = {0};
-    char condition[100] = {0};
-    
-    // Try to extract the WHERE condition
-    if (sscanf(query, "SELECT * FROM users WHERE %[^;]", condition) == 1) {
-        
-        // Check if the condition contains OR (SQL injection)
-        if (strstr(condition, "OR") != NULL) {
-            // In a real scenario, this would execute the full query and return all results
-            printf("Query results:\n");
-            for (int i = 0; users[i].id != 0; i++) {
-                printf("ID: %d, Username: %s, Email: %s\n", 
-                       users[i].id, users[i].username, users[i].email);
-            }
-        } else {
-            // Normal single user query
-            if (sscanf(condition, "username = '%[^']'", username) == 1) {
-                for (int i = 0; users[i].id != 0; i++) {
-                    if (strcmp(users[i].username, username) == 0) {
-                        printf("Query results:\n");
-                        printf("ID: %d, Username: %s, Email: %s\n", 
-                               users[i].id, users[i].username, users[i].email);
-                        return;
-                    }
-                }
-                printf("No results found\n");
-            }
-        }
-    } else {
-        printf("Invalid query format\n");
+    if (!mysql_real_connect(conn, "localhost", "testuser", "Password90!", "testdb", 0, NULL, 0)) {
+        fprintf(stderr, "mysql_real_connect failed: %s\n", mysql_error(conn));
+        mysql_close(conn);
+        return;
     }
+    
+    char query[256];
+    snprintf(query, sizeof(query), "SELECT * FROM users WHERE username = '%s'", userInput);
+    
+    
+    if (mysql_query(conn, query) != 0) {
+        fprintf(stderr, "mysql_query failed: %s\n", mysql_error(conn));
+    } else {
+        MYSQL_RES *result = mysql_store_result(conn);
+        if (result != NULL) {
+            MYSQL_ROW row;
+            while ((row = mysql_fetch_row(result)) != NULL) {
+                printf("ID: %s, Username: %s, Email: %s\n", row[0], row[1], row[2]);
+            }
+            mysql_free_result(result);
+        }
+    }
+    
+    mysql_close(conn);
+}
+
+// PostgreSQL 
+void postgres_query_unsafe(const char* userInput) {
+    PGconn *conn = PQconnectdb("dbname=testdb user=testuser password=Password90! host=localhost");
+    
+    if (PQstatus(conn) != CONNECTION_OK) {
+        fprintf(stderr, "Connection to database failed: %s", PQerrorMessage(conn));
+        PQfinish(conn);
+        return;
+    }
+    
+    char query[256];
+    snprintf(query, sizeof(query), "SELECT * FROM users WHERE username = '%s'", userInput);
+    
+    PGresult *result = PQexec(conn, query);
+    
+    if (PQresultStatus(result) == PGRES_TUPLES_OK) {
+        int rows = PQntuples(result);
+        for (int i = 0; i < rows; i++) {
+            printf("ID: %s, Username: %s, Email: %s\n",
+                   PQgetvalue(result, i, 0),
+                   PQgetvalue(result, i, 1),
+                   PQgetvalue(result, i, 2));
+        }
+    }
+    
+    PQclear(result);
+    PQfinish(conn);
+}
+
+// SQLite 
+void sqlite_query_unsafe(const char* userInput) {
+    sqlite3 *db;
+    char *errMsg = 0;
+    
+    if (sqlite3_open("test.db", &db) != SQLITE_OK) {
+        fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return;
+    }
+    
+    char query[256];
+    snprintf(query, sizeof(query), "SELECT * FROM users WHERE username = '%s'", userInput);
+    
+    if (sqlite3_exec(db, query, 0, 0, &errMsg) != SQLITE_OK) {
+        fprintf(stderr, "SQL error: %s\n", errMsg);
+        sqlite3_free(errMsg);
+    }
+    
+    sqlite3_close(db);
+}
+
+// ODBC 
+void odbc_query_unsafe(const char* userInput) {
+    SQLHENV env;
+    SQLHDBC dbc;
+    SQLHSTMT stmt;
+    SQLRETURN ret;
+    
+    // Allocate environment handle
+    SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &env);
+    SQLSetEnvAttr(env, SQL_ATTR_ODBC_VERSION, (void*)SQL_OV_ODBC3, 0);
+    
+    // Allocate connection handle
+    SQLAllocHandle(SQL_HANDLE_DBC, env, &dbc);
+    
+    // Connect to database
+    SQLCHAR connStr[] = "DSN=TestDB;UID=testuser;PWD=Password90!";
+    ret = SQLDriverConnect(dbc, NULL, connStr, SQL_NTS, NULL, 0, NULL, SQL_DRIVER_NOPROMPT);
+    
+    if (!SQL_SUCCEEDED(ret)) {
+        fprintf(stderr, "Failed to connect to database\n");
+        goto cleanup;
+    }
+    
+    // Allocate statement handle
+    SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
+    
+    char query[256];
+    snprintf(query, sizeof(query), "SELECT * FROM users WHERE username = '%s'", userInput);
+    
+    ret = SQLExecDirect(stmt, (SQLCHAR*)query, SQL_NTS);
+    
+    if (SQL_SUCCEEDED(ret)) {
+        SQLCHAR id[50], username[50], email[50];
+        SQLLEN idLen, usernameLen, emailLen;
+        
+        while (SQL_SUCCEEDED(SQLFetch(stmt))) {
+            SQLGetData(stmt, 1, SQL_C_CHAR, id, sizeof(id), &idLen);
+            SQLGetData(stmt, 2, SQL_C_CHAR, username, sizeof(username), &usernameLen);
+            SQLGetData(stmt, 3, SQL_C_CHAR, email, sizeof(email), &emailLen);
+            
+            printf("ID: %s, Username: %s, Email: %s\n", id, username, email);
+        }
+    }
+    
+cleanup:
+    SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+    SQLDisconnect(dbc);
+    SQLFreeHandle(SQL_HANDLE_DBC, dbc);
+    SQLFreeHandle(SQL_HANDLE_ENV, env);
 }
 
 int main(void) {
     int server_fd, client_fd;
     struct sockaddr_in addr;
     socklen_t addrlen = sizeof(addr);
-    char username[BUFFER_SIZE] = {0};
-    char query[BUFFER_SIZE * 2];
+    char buffer[BUFFER_SIZE] = {0};
 
     // Setup the socket
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -82,26 +166,18 @@ int main(void) {
     if (client_fd < 0) exit(EXIT_FAILURE);
 
     // Read input from the socket
-    ssize_t n = read(client_fd, username, BUFFER_SIZE - 1);
+    ssize_t n = read(client_fd, buffer, BUFFER_SIZE - 1);
     if (n < 0) exit(EXIT_FAILURE);
-    username[n] = '\0';
+    buffer[n] = '\0';
 
     close(client_fd);
     close(server_fd);
 
-    snprintf(query, sizeof(query), "SELECT * FROM users WHERE username = '%s'", username);
-    
-    execute_query(query);
+    // Test all database implementations
+    mysql_query_unsafe(buffer);
+    postgres_query_unsafe(buffer);
+    sqlite_query_unsafe(buffer);
+    odbc_query_unsafe(buffer);
 
     return 0;
 }
-
-/*
-To test:
-
-gcc create_user_cwe89.c -o create_user_cwe89
-./create_user_cwe89
-
-In another terminal:
-echo "admin' OR '1'='1" | nc 127.0.0.1 8080
-*/
