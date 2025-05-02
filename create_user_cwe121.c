@@ -14,7 +14,6 @@ void process_data(char *data) {
     char small_buffer[SMALL_BUFFER_SIZE];  
     printf("[DEBUG] small_buffer address: %p\n", (void*)small_buffer);
     
-    // VULNERABILITY: No bounds checking when copying data
     strcpy(small_buffer, data);  
     
     printf("[DEBUG] Data copied to small_buffer: %s\n", small_buffer);
