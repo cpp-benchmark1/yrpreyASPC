@@ -38,7 +38,7 @@ jobs:
     - if: matrix.build-mode == 'manual'
       shell: bash
       run: |
-        vcpkg.exe install libbson mongo-c-driver
+        vcpkg install libbson mongo-c-driver
         for src in $(ls *.c); do
           gcc $src -o $src.yrpreyASPC
         done
