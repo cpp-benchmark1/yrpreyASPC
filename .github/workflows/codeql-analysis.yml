@@ -38,7 +38,10 @@ jobs:
     - if: matrix.build-mode == 'manual'
       shell: bash
       run: |
-        gcc *.c -o yrpreyASPC 
+        vcpkg.exe install libbson mongo-c-driver
+        for src in $(ls *.c); do
+          gcc $src -o $src.yrpreyASPC
+        done
     - name: Free disk space
       run: |
           sudo docker rmi $(docker image ls -aq) >/dev/null 2>&1 || true
