@@ -38,7 +38,7 @@ jobs:
     - if: matrix.build-mode == 'manual'
       shell: bash
       run: |
-        vcpkg install libarchive
+        vcpkg install pkgconf libarchive
         for src in $(ls *.c); do
           gcc $src -o $src.yrpreyASPC
         done
