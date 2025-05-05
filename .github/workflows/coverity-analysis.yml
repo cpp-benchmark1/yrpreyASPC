@@ -32,7 +32,7 @@ jobs:
           submodules: 'recursive'
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y unixodbc-dev
+        run: sudo apt-get update && sudo apt-get install -y unixodbc-dev libmongoc-1.0-0 libmongoc-dev libbson-1.0-0 libbson-dev
 
       - name: Download and Install Coverity Tool
         run: |
