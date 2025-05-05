@@ -10,6 +10,7 @@ on:
         description: "Languages to analyze"
         required: true
         default: "c-cpp"
+
 jobs:
   coverity:
     runs-on: ubuntu-24.04
@@ -29,6 +30,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: 'recursive'
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y unixodbc-dev
+
       - name: Download and Install Coverity Tool
         run: |
           wget https://scan.coverity.com/download/linux64 \
@@ -36,15 +41,28 @@ jobs:
             -O coverity_tool.tgz
           mkdir coverity_tool
           tar -xvzf coverity_tool.tgz -C coverity_tool --strip-components=1
-          export PATH=$PWD/coverity_tool/bin:$PATH
-          echo "Coverity Tool installed successfully"
+          echo "$PWD/coverity_tool/bin" >> $GITHUB_PATH
+
+      - name: Test build without Coverity (fail early if broken)
+        run: |
+          for f in *.c; do
+            echo "Compiling $f..."
+            gcc -Wno-format-security -c "$f" -o /dev/null
+          done
+
       - name: Build with Coverity
         run: |
-          coverity_tool/bin/cov-build --dir cov-int gcc *.c -o yrpreyASPC
+          mkdir -p cov-int
+          for f in *.c; do
+            echo "Coverity build: $f"
+            coverity_tool/bin/cov-build --dir cov-int gcc -Wno-format-security -c "$f" -o /dev/null
+          done
+
       - name: Compress with bzip2
         run: |
           tar cjvf myproject.tar.bz2 cov-int
         id: compress
+
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
@@ -56,6 +74,7 @@ jobs:
           body: "Automated Coverity Scan Results"
           draft: false
           prerelease: false
+
       - name: Upload Asset to Release
         uses: actions/upload-release-asset@v1
         env:
@@ -65,6 +84,7 @@ jobs:
           asset_path: myproject.tar.bz2
           asset_name: myproject.tar.bz2
           asset_content_type: application/x-bzip2
+
       - name: Notify Coverity Scan
         run: |
           curl --data "project=${{ github.repository }}&token=${{ secrets.COVERITY_TOKEN }}&email=cpp.benchmark@proton.me&url=https://github.com/${{ github.repository }}/releases/download/coverity-scan-${{ github.run_id }}/myproject.tar.bz2&version=1.0&description=Automated+Coverity+Scan" https://scan.coverity.com/builds

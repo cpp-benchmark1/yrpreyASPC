@@ -38,9 +38,16 @@ jobs:
     - if: matrix.build-mode == 'manual'
       shell: bash
       run: |
-        for src in $(ls *.c); do
-          gcc $src -o $src.yrpreyASPC
-        done
+        sudo apt-get update
+        sudo apt-get install -y \
+          unixodbc-dev \
+          libmysqlclient-dev \
+          libpq-dev \
+          libsqlite3-dev
+        for src in *.c; do
+          gcc "$src" -o "$src.yrpreyASPC" \
+            -lmysqlclient -lpq -lsqlite3 -lodbc
+        done      
     - name: Free disk space
       run: |
           sudo docker rmi $(docker image ls -aq) >/dev/null 2>&1 || true
