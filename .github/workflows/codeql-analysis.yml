@@ -49,7 +49,7 @@ jobs:
         for src in *.c; do
           gcc "$src" -o "${src%.c}.out" \
             -Wall -Wformat-security \
-            -I/usr/include/libmongoc-1.0 \  # Adicionando o path correto
+            -I/usr/include/libmongoc-1.0 \ 
             -lmysqlclient -lpq -lsqlite3 -lodbc \
             -lmongoc-1.0 -lbson-1.0
         done
