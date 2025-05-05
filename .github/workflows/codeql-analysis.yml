@@ -30,6 +30,8 @@ jobs:
       uses: actions/checkout@v4
       with:
         submodules: 'recursive'
+    - name: Install MongoDB C Driver dependencies
+      run: sudo apt-get update && sudo apt-get install -y libmongoc-1.0-0 libmongoc-dev libbson-1.0-0 libbson-dev
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
@@ -45,9 +47,13 @@ jobs:
           libpq-dev \
           libsqlite3-dev
         for src in *.c; do
-          gcc "$src" -o "$src.yrpreyASPC" \
+          gcc "$src" -o "${src%.c}.out" \
+            -Wall -Wformat-security \
+            $(pkg-config --cflags --libs libmongoc-1.0) \
             -lmysqlclient -lpq -lsqlite3 -lodbc
-        done      
+        done
+
+
     - name: Free disk space
       run: |
           sudo docker rmi $(docker image ls -aq) >/dev/null 2>&1 || true
@@ -59,10 +65,10 @@ jobs:
             esl-erlang firefox gfortran-8 gfortran-9 google-chrome-stable \
             google-cloud-sdk imagemagick \
             libmagickcore-dev libmagickwand-dev libmagic-dev ant ant-optional kubectl \
-            mercurial apt-transport-https mono-complete libmysqlclient \
-            unixodbc-dev yarn chrpath libssl-dev libxft-dev \
+            mercurial apt-transport-https mono-complete \
+            yarn chrpath libssl-dev libxft-dev \
             libfreetype6 libfreetype6-dev libfontconfig1 libfontconfig1-dev \
-            snmp pollinate libpq-dev postgresql-client powershell ruby-full \
+            snmp pollinate postgresql-client powershell ruby-full \
             sphinxsearch subversion mongodb-org azure-cli microsoft-edge-stable \
             -y -f || true
           sudo apt-get purge google-cloud-sdk -f -y  || true
