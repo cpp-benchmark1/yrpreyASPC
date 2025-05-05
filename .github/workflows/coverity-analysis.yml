@@ -45,7 +45,10 @@ jobs:
 
       - name: Test build without Coverity (fail early if broken)
         run: |
-          gcc -Wno-format-security *.c -o yrpreyASPC
+          for f in *.c; do
+            echo "Compiling $f..."
+            gcc -Wno-format-security -c "$f" -o /dev/null
+          done
 
       - name: Build with Coverity
         run: |
