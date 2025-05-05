@@ -46,6 +46,7 @@ jobs:
           libmysqlclient-dev \
           libpq-dev \
           libsqlite3-dev
+        find /usr/include -name mongoc.h
         for src in *.c; do
           gcc "$src" -o "${src%.c}.out" \
             -Wall -Wformat-security \
