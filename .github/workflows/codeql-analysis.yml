@@ -46,6 +46,7 @@ jobs:
           libmysqlclient-dev \
           libpq-dev \
           libsqlite3-dev
+        find /usr/lib -name "libmongoc-1.0.*"
         for src in *.c; do
           gcc "$src" -o "${src%.c}.out" \
             -Wall -Wformat-security \
@@ -53,6 +54,7 @@ jobs:
             -lmysqlclient -lpq -lsqlite3 -lodbc \
             -lmongoc-1.0 -lbson-1.0
         done
+
 
     - name: Free disk space
       run: |
