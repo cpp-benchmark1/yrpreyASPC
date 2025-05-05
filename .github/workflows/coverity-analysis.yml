@@ -52,7 +52,11 @@ jobs:
 
       - name: Build with Coverity
         run: |
-          coverity_tool/bin/cov-build --dir cov-int gcc -Wno-format-security *.c -o yrpreyASPC
+          mkdir -p cov-int
+          for f in *.c; do
+            echo "Coverity build: $f"
+            coverity_tool/bin/cov-build --dir cov-int gcc -Wno-format-security -c "$f" -o /dev/null
+          done
 
       - name: Compress with bzip2
         run: |
