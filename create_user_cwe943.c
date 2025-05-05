@@ -46,7 +46,8 @@ void mongoInsertUnsafe(const char* userInput) {
 }
 
 int main() {
-    int server_fd, new_socket;
+    int server_fd;
+    int new_socket;
     ssize_t valread;
     struct sockaddr_in address;
     int opt = 1;
