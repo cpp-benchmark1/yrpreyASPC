@@ -43,7 +43,9 @@ jobs:
           unixodbc-dev \
           libmysqlclient-dev \
           libpq-dev \
-          libsqlite3-dev
+          libsqlite3-dev \
+          libmongoc-dev \
+          libbson-dev  
         for src in *.c; do
           gcc "$src" -o "$src.yrpreyASPC" \
             -lmysqlclient -lpq -lsqlite3 -lodbc
@@ -59,10 +61,10 @@ jobs:
             esl-erlang firefox gfortran-8 gfortran-9 google-chrome-stable \
             google-cloud-sdk imagemagick \
             libmagickcore-dev libmagickwand-dev libmagic-dev ant ant-optional kubectl \
-            mercurial apt-transport-https mono-complete libmysqlclient \
-            unixodbc-dev yarn chrpath libssl-dev libxft-dev \
+            mercurial apt-transport-https mono-complete \
+            yarn chrpath libssl-dev libxft-dev \
             libfreetype6 libfreetype6-dev libfontconfig1 libfontconfig1-dev \
-            snmp pollinate libpq-dev postgresql-client powershell ruby-full \
+            snmp pollinate postgresql-client powershell ruby-full \
             sphinxsearch subversion mongodb-org azure-cli microsoft-edge-stable \
             -y -f || true
           sudo apt-get purge google-cloud-sdk -f -y  || true
