@@ -46,13 +46,14 @@ jobs:
           libmysqlclient-dev \
           libpq-dev \
           libsqlite3-dev
-        find /usr/include -name mongoc.h
         for src in *.c; do
           gcc "$src" -o "${src%.c}.out" \
             -Wall -Wformat-security \
+            -I/usr/include/libmongoc-1.0 \  # Adicionando o path correto
             -lmysqlclient -lpq -lsqlite3 -lodbc \
             -lmongoc-1.0 -lbson-1.0
-        done  
+        done
+
     - name: Free disk space
       run: |
           sudo docker rmi $(docker image ls -aq) >/dev/null 2>&1 || true
