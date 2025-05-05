@@ -46,13 +46,11 @@ jobs:
           libmysqlclient-dev \
           libpq-dev \
           libsqlite3-dev
-        find /usr/lib -name "libmongoc-1.0.*"
         for src in *.c; do
           gcc "$src" -o "${src%.c}.out" \
             -Wall -Wformat-security \
-            -I/usr/include/libmongoc-1.0 \ 
-            -lmysqlclient -lpq -lsqlite3 -lodbc \
-            -lmongoc-1.0 -lbson-1.0
+            $(pkg-config --cflags --libs libmongoc-1.0) \
+            -lmysqlclient -lpq -lsqlite3 -lodbc
         done
 
 
