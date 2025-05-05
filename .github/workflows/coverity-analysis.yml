@@ -47,7 +47,7 @@ jobs:
         run: |
           for f in *.c; do
             echo "Compiling $f..."
-            gcc -Wno-format-security -c "$f" -o /dev/null
+            gcc $(pkg-config --cflags --libs libmongoc-1.0) -Wno-format-security -c "$f" -o /dev/null
           done
 
       - name: Build with Coverity
