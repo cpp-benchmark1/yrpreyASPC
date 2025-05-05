@@ -98,7 +98,7 @@ void sqlite_query_unsafe(const char* userInput) {
 void odbc_query_unsafe(const char* userInput) {
     SQLHENV env;
     SQLHDBC dbc;
-    SQLHSTMT stmt;
+    SQLHSTMT stmt = NULL;
     SQLRETURN ret;
     
     // Allocate environment handle
