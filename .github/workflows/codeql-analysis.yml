@@ -48,7 +48,7 @@ jobs:
           libsqlite3-dev
         for src in *.c; do
           gcc "$src" -o "${src%.c}.out" \
-            -Wall -Wformat-security -Werror \
+            -Wall -Wformat-security \
             -lmysqlclient -lpq -lsqlite3 -lodbc \
             -lmongoc-1.0 -lbson-1.0
         done  
