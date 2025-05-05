@@ -38,8 +38,9 @@ jobs:
     - if: matrix.build-mode == 'manual'
       shell: bash
       run: |
+        sudo apt-get install unixodbc-dev libmysqlclient-dev
         for src in $(ls *.c); do
-          gcc $src -o $src.yrpreyASPC
+          gcc $src -lmysqlclient -o $src.yrpreyASPC
         done
     - name: Free disk space
       run: |
