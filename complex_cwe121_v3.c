@@ -91,10 +91,11 @@ void load_session_config(ProtocolHandler *handler) {
 }
 
 int main(int argc, char *argv[]) {
+#ifdef _WIN32
+    struct sockaddr_in addr;
     setlocale(LC_ALL, "");
     ProtocolHandler handler;
     SOCKET sock;
-    struct sockaddr_in addr;
     char *buffer = (char *)malloc(BUFFER_SIZE);
     WSADATA wsaData;
     
@@ -111,7 +112,6 @@ int main(int argc, char *argv[]) {
     }
     
     init_handler(&handler);
-    
     sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock == INVALID_SOCKET) {
         printf("Socket creation failed\n");
@@ -122,10 +122,9 @@ int main(int argc, char *argv[]) {
     
     addr.sin_family = AF_INET;
     addr.sin_port = htons(PORT);
-    
     if (argc > 1 && strcmp(argv[1], "server") == 0) {
         addr.sin_addr.s_addr = INADDR_ANY;
-        
+
         if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) == SOCKET_ERROR) {
             printf("Bind failed\n");
             free(buffer);
@@ -133,7 +132,7 @@ int main(int argc, char *argv[]) {
             WSACleanup();
             return 1;
         }
-        
+
         if (listen(sock, 1) == SOCKET_ERROR) {
             printf("Listen failed\n");
             free(buffer);
@@ -141,11 +140,11 @@ int main(int argc, char *argv[]) {
             WSACleanup();
             return 1;
         }
-        
+
         printf("Server listening on port %d...\n", PORT);
         printf("Buffer sizes: HEADER=%d, PAYLOAD=%d bytes\n", 
                HEADER_SIZE, PAYLOAD_SIZE);
-        
+
         SOCKET client_sock = accept(sock, NULL, NULL);
         if (client_sock == INVALID_SOCKET) {
             printf("Accept failed\n");
@@ -154,7 +153,7 @@ int main(int argc, char *argv[]) {
             WSACleanup();
             return 1;
         }
-        
+
         int bytes_received = recv(client_sock, buffer, BUFFER_SIZE, 0);
         if (bytes_received > 0) {
             printf("Received %d bytes\n", bytes_received);
@@ -168,7 +167,7 @@ int main(int argc, char *argv[]) {
                 process_packet_sequence(&handler);
             }
         }
-        
+
         closesocket(client_sock);
     } else {
         addr.sin_addr.s_addr = inet_addr("127.0.0.1");
@@ -203,5 +202,6 @@ int main(int argc, char *argv[]) {
     free(buffer);
     closesocket(sock);
     WSACleanup();
+#endif
     return 0;
 }
