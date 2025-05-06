@@ -30,8 +30,6 @@ jobs:
       uses: actions/checkout@v4
       with:
         submodules: 'recursive'
-    - name: Install MongoDB C Driver dependencies
-      run: sudo apt-get update && sudo apt-get install -y libmongoc-1.0-0 libmongoc-dev libbson-1.0-0 libbson-dev
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
@@ -45,38 +43,20 @@ jobs:
           unixodbc-dev \
           libmysqlclient-dev \
           libpq-dev \
-          libsqlite3-dev
+          libsqlite3-dev \
+          pkgconf \
+          libmongoc-1.0-0 \
+          libmongoc-dev \
+          libbson-1.0-0 \
+          libbson-dev \
+          libarchive-dev
         for src in *.c; do
           gcc -c "$src" -o "${src%.c}.out" \
             -Wall -Wformat-security \
             $(pkg-config --cflags --libs libmongoc-1.0) \
-            -lmysqlclient -lpq -lsqlite3 -lodbc
+            -lmysqlclient -lpq -lsqlite3 -lodbc \
+            -larchive
         done
-
-
-    - name: Free disk space
-      run: |
-          sudo docker rmi $(docker image ls -aq) >/dev/null 2>&1 || true
-          sudo rm -rf \
-            /usr/share/dotnet /usr/local/lib/android /opt/ghc \
-            /usr/local/share/powershell /usr/share/swift /usr/local/.ghcup \
-            /usr/lib/jvm || true
-          sudo apt-get purge aria2 ansible azure-cli shellcheck rpm xorriso zsync \
-            esl-erlang firefox gfortran-8 gfortran-9 google-chrome-stable \
-            google-cloud-sdk imagemagick \
-            libmagickcore-dev libmagickwand-dev libmagic-dev ant ant-optional kubectl \
-            mercurial apt-transport-https mono-complete \
-            yarn chrpath libssl-dev libxft-dev \
-            libfreetype6 libfreetype6-dev libfontconfig1 libfontconfig1-dev \
-            snmp pollinate postgresql-client powershell ruby-full \
-            sphinxsearch subversion mongodb-org azure-cli microsoft-edge-stable \
-            -y -f || true
-          sudo apt-get purge google-cloud-sdk -f -y  || true
-          sudo apt-get purge '~n ^mysql' -f -y  || true
-          sudo apt-get purge '~n ^php' -f -y  || true
-          sudo apt-get purge '~n ^dotnet' -f -y  || true
-          sudo apt-get autoremove -y || true
-          sudo apt-get autoclean -y || true
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
       with:
