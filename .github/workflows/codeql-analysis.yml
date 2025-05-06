@@ -44,9 +44,14 @@ jobs:
           libmysqlclient-dev \
           libpq-dev \
           libsqlite3-dev \
+          pkgconf \
+          libmongoc-1.0-0 \
+          libmongoc-dev \
+          libbson-1.0-0 \
+          libbson-dev \
           libarchive-dev
         for src in *.c; do
-          gcc "$src" -o "${src%.c}.out" \
+          gcc -c "$src" -o "${src%.c}.out" \
             -Wall -Wformat-security \
             $(pkg-config --cflags --libs libmongoc-1.0) \
             -lmysqlclient -lpq -lsqlite3 -lodbc \
