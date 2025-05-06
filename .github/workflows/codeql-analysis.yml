@@ -30,8 +30,6 @@ jobs:
       uses: actions/checkout@v4
       with:
         submodules: 'recursive'
-    - name: Install MongoDB C Driver dependencies
-      run: sudo apt-get update && sudo apt-get install -y libmongoc-1.0-0 libmongoc-dev libbson-1.0-0 libbson-dev
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
