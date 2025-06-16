@@ -1,4 +1,5 @@
 name: "CodeQL"
+
 on:
   push:
     branches: [ "main" ]
@@ -10,6 +11,7 @@ on:
         description: "Languages to analyze"
         required: true
         default: "c-cpp"
+
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
@@ -23,41 +25,51 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - language: c-cpp
-          build-mode: manual
+          - language: c-cpp
+            build-mode: manual
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        submodules: 'recursive'
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: ${{ matrix.language }}
-        build-mode: ${{ matrix.build-mode }}
-    - if: matrix.build-mode == 'manual'
-      shell: bash
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          unixodbc-dev \
-          libmysqlclient-dev \
-          libpq-dev \
-          libsqlite3-dev \
-          pkgconf \
-          libmongoc-1.0-0 \
-          libmongoc-dev \
-          libbson-1.0-0 \
-          libbson-dev \
-          libarchive-dev
-        for src in *.c; do
-          gcc -c "$src" -o "${src%.c}.out" \
-            -Wall -Wformat-security \
-            $(pkg-config --cflags --libs libmongoc-1.0) \
-            -lmysqlclient -lpq -lsqlite3 -lodbc \
-            -larchive
-        done
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
-      with:
-        category: "/language:${{matrix.language}}"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+
+      - if: matrix.build-mode == 'manual'
+        name: Manual Build (skip unsupported headers)
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            pkgconf \
+            unixodbc-dev \
+            libmysqlclient-dev \
+            libpq-dev \
+            libsqlite3-dev \
+            libmongoc-1.0-0 \
+            libmongoc-dev \
+            libbson-1.0-0 \
+            libbson-dev \
+            libarchive-dev
+
+          for src in *.c; do
+            # Skip files that include unsupported Windows-only headers
+            if grep -q "mbstring.h" "$src"; then
+              echo "⏩ Skipping $src due to unsupported header: mbstring.h"
+              continue
+            fi
+            gcc -c "$src" -o "${src%.c}.out" \
+              -Wall -Wformat-security \
+              $(pkg-config --cflags --libs libmongoc-1.0) \
+              -lmysqlclient -lpq -lsqlite3 -lodbc -larchive
+          done
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"
