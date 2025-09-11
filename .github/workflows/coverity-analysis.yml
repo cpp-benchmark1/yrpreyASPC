@@ -49,7 +49,7 @@ jobs:
             libarchive-dev \
             bzip2 \
             libxml2-dev \
-            libcassandra-dev \
+            libpq-dev \
             libssl-dev
 
       - name: Download and install Coverity tool
