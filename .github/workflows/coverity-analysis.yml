@@ -35,7 +35,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
+          sudo apt-get install -y pkg-config \
             build-essential \
             pkgconf \
             unixodbc-dev \
@@ -47,7 +47,10 @@ jobs:
             libbson-1.0-0 \
             libbson-dev \
             libarchive-dev \
-            bzip2
+            bzip2 \
+            libxml2-dev \
+            libpq-dev \
+            libssl-dev
 
       - name: Download and install Coverity tool
         run: |
@@ -67,10 +70,12 @@ jobs:
               echo "⏩ Skipping $src due to unsupported header: mbstring.h"
               continue
             fi
-            coverity_tool/bin/cov-build --dir cov-int gcc -c "$src" -o "${src%.c}.out" \
-              -Wall -Wformat-security \
-              $(pkg-config --cflags --libs libmongoc-1.0) \
-              -lmysqlclient -lpq -lsqlite3 -lodbc -larchive
+          coverity_tool/bin/cov-build --dir cov-int gcc -c "$src" -o "${src%.c}.out" \
+            -Wall -Wformat-security \
+            $(pkg-config --cflags libxml-2.0 libmongoc-1.0 libpq openssl) \
+            $(pkg-config --libs libxml-2.0 libmongoc-1.0 libpq openssl) \
+            -lmysqlclient -lsqlite3 -lodbc -larchive
+
           done
 
       - name: Compress analysis results
