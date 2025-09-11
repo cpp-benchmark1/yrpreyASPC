@@ -68,8 +68,9 @@ jobs:
             fi
             gcc -c "$src" -o "${src%.c}.out" \
               -Wall -Wformat-security \
-              $(pkg-config --cflags --libs libmongoc-1.0) \
-              -lmysqlclient -lpq -lsqlite3 -lodbc -larchive
+              $(pkg-config --cflags libxml-2.0 libmongoc-1.0 libpq openssl) \
+              $(pkg-config --libs libxml-2.0 libmongoc-1.0 libpq openssl) \
+              -lmysqlclient -lsqlite3 -lodbc -larchive
           done
 
       - name: Perform CodeQL Analysis
