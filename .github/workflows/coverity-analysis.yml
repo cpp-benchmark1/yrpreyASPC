@@ -70,11 +70,12 @@ jobs:
               echo "⏩ Skipping $src due to unsupported header: mbstring.h"
               continue
             fi
-            coverity_tool/bin/cov-build --dir cov-int gcc -c "$src" -o "${src%.c}.out" \
-              -Wall -Wformat-security \
-              $(pkg-config --cflags libxml-2.0 libmongoc-1.0) \
-              $(pkg-config --libs libxml-2.0 libmongoc-1.0) \
-              -lmysqlclient -lpq -lsqlite3 -lodbc -larchive -lssl -lcrypto
+          coverity_tool/bin/cov-build --dir cov-int gcc -c "$src" -o "${src%.c}.out" \
+            -Wall -Wformat-security \
+            $(pkg-config --cflags libxml-2.0 libmongoc-1.0 libpq openssl) \
+            $(pkg-config --libs libxml-2.0 libmongoc-1.0 libpq openssl) \
+            -lmysqlclient -lsqlite3 -lodbc -larchive
+
           done
 
       - name: Compress analysis results
