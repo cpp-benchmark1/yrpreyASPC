@@ -35,7 +35,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
+          sudo apt-get install -y pkg-config \
             build-essential \
             pkgconf \
             unixodbc-dev \
@@ -72,8 +72,9 @@ jobs:
             fi
             coverity_tool/bin/cov-build --dir cov-int gcc -c "$src" -o "${src%.c}.out" \
               -Wall -Wformat-security \
-              $(pkg-config --cflags --libs libmongoc-1.0) \
-              -lmysqlclient -lpq -lsqlite3 -lodbc -larchive
+              $(pkg-config --cflags libxml-2.0 libmongoc-1.0) \
+              $(pkg-config --libs libxml-2.0 libmongoc-1.0) \
+              -lmysqlclient -lpq -lsqlite3 -lodbc -larchive -lssl -lcrypto
           done
 
       - name: Compress analysis results
