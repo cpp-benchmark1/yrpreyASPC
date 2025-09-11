@@ -6,7 +6,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 
-extern "C" char* gets(char*);
+char* gets(char*);
 
 int main() {
     char buffer[128];

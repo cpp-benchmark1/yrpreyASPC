@@ -5,7 +5,7 @@
 
 
 // Import the dangerous gets function
-extern "C" char* gets(char*);
+char* gets(char*);
 
 int main() {
     char buffer[256];
