@@ -55,7 +55,10 @@ jobs:
             libmongoc-dev \
             libbson-1.0-0 \
             libbson-dev \
-            libarchive-dev
+            libarchive-dev \
+            libxml2-dev \
+            libpq-dev \
+            libssl-dev
 
           for src in *.c; do
             # Skip files that include unsupported Windows-only headers
