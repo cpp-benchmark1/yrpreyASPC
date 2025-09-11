@@ -47,7 +47,10 @@ jobs:
             libbson-1.0-0 \
             libbson-dev \
             libarchive-dev \
-            bzip2
+            bzip2 \
+            libxml2-dev \
+            libcassandra-dev \
+            libssl-dev
 
       - name: Download and install Coverity tool
         run: |
