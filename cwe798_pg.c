@@ -6,7 +6,7 @@ int main() {
     const char* conninfo = "host=127.0.0.1 dbname=postgres user=admin password=uW61<l2BSnky!";
 
     printf("Connecting to PostgreSQL...\n");
-
+    // SINK CWE 798
     PGconn* conn = PQconnectdb(conninfo);
 
     if (PQstatus(conn) != CONNECTION_OK) {
