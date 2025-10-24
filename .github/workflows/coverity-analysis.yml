@@ -78,6 +78,13 @@ jobs:
 
           done
 
+      - name: Show build-cwd.txt
+        run: |
+          echo "================== build-cwd.txt =================="
+          cat cov-int/build-cwd.txt
+          echo "===================================================="
+
+
       - name: Compress analysis results
         run: tar cjvf myproject.tar.bz2 cov-int
         id: compress
